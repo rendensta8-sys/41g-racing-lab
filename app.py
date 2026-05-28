@@ -15,7 +15,7 @@ from src.character import (
     get_second_candidate_comment,
     get_value_horse_comment,
 )
-from src.scoring import pick_by_role, score_horses
+from src.scoring import axis_grade, compute_axis_scores, pick_by_role, score_horses
 from src.utils import (
     HORSE_COLUMNS,
     RACE_COLUMNS,
@@ -179,6 +179,25 @@ def inject_style() -> None:
             border-radius: 8px;
             padding: 11px 12px;
             font-size: 13px;
+        }
+        .locked-title {
+            color: #f4d27c;
+            font-weight: 900;
+            margin-bottom: 7px;
+        }
+        .locked-axis {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin: 6px 0;
+        }
+        .locked-pill {
+            border: 1px solid rgba(214, 173, 75, 0.22);
+            background: rgba(214, 173, 75, 0.07);
+            border-radius: 999px;
+            padding: 4px 8px;
+            color: #fff4c4;
+            font-weight: 800;
         }
         @media (max-width: 900px) {
             .top-hit-grid {
@@ -348,6 +367,19 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
             <div class="top-hit-button">おっちゃんの本音を見る</div>
         </div>
         """
+    main_axes = compute_axis_scores(main)
+    locked_axis_html = "".join(
+        [
+            f"<span class='locked-pill'>血統 {axis_grade(main_axes['axis_bloodline'])}</span>",
+            f"<span class='locked-pill'>距離 {axis_grade(main_axes['axis_distance'])}</span>",
+            f"<span class='locked-pill'>コース {axis_grade(main_axes['axis_course'])}</span>",
+            f"<span class='locked-pill'>展開 {axis_grade(main_axes['axis_pace'])}</span>",
+            f"<span class='locked-pill'>騎手 {axis_grade(main_axes['axis_jockey_stable'])}</span>",
+            f"<span class='locked-pill'>調子 {axis_grade(main_axes['axis_condition'])}</span>",
+            "<span class='locked-pill'>危険度 ???</span>",
+            "<span class='locked-pill'>妙味 ???</span>",
+        ]
+    )
 
     st.markdown(
         f"""
@@ -361,7 +393,9 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
             </div>
             <div class="top-hit-grid">{card_html}</div>
             <div class="locked-area">
-                🔒 詳細分析ロック: 6軸評価 / 危険度 / 妙味 / 買い目候補は有料版エリアで確認できます。
+                <div class="locked-title">🔒 詳細分析ロック</div>
+                <div class="locked-axis">{locked_axis_html}</div>
+                <div>おっちゃんの本音コメント：ロック中</div>
             </div>
         </div>
         """,
