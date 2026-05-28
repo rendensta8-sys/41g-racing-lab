@@ -385,13 +385,13 @@ def dashboard(races: pd.DataFrame, horses: pd.DataFrame, results: pd.DataFrame, 
     if races.empty:
         st.info("まだレースが登録されていません。Race Boardで作戦対象を追加してください。")
     else:
-        st.dataframe(races, use_container_width=True, hide_index=True)
+        st.dataframe(races, width="stretch", hide_index=True)
 
     st.subheader("戦績ログ")
     if results.empty:
         st.caption("まだ結果はありません。Result Chronicleで記録すると、おっちゃんが育ちます。")
     else:
-        st.dataframe(results, use_container_width=True, hide_index=True)
+        st.dataframe(results, width="stretch", hide_index=True)
 
 
 def race_board(races: pd.DataFrame) -> None:
@@ -431,7 +431,7 @@ def race_board(races: pd.DataFrame) -> None:
         st.rerun()
 
     st.subheader("登録済みレース")
-    st.dataframe(races, use_container_width=True, hide_index=True)
+    st.dataframe(races, width="stretch", hide_index=True)
 
 
 def horse_scout(races: pd.DataFrame, horses: pd.DataFrame) -> None:
@@ -461,7 +461,7 @@ def horse_scout(races: pd.DataFrame, horses: pd.DataFrame) -> None:
         st.rerun()
 
     with st.expander("サンプルCSV形式を見る", expanded=False):
-        st.dataframe(horses.head(16), use_container_width=True, hide_index=True)
+        st.dataframe(horses.head(16), width="stretch", hide_index=True)
 
     st.subheader("手入力スカウト")
     with st.form("horse_form", clear_on_submit=True):
@@ -512,7 +512,7 @@ def horse_scout(races: pd.DataFrame, horses: pd.DataFrame) -> None:
         st.rerun()
 
     st.subheader("登録済み出走馬")
-    st.dataframe(horses[horses["race_id"] == race_id], use_container_width=True, hide_index=True)
+    st.dataframe(horses[horses["race_id"] == race_id], width="stretch", hide_index=True)
 
 
 def role_summary(title: str, df: pd.DataFrame, comment_func, limit: int = 3) -> None:
@@ -570,7 +570,7 @@ def tactics_room(races: pd.DataFrame, horses: pd.DataFrame) -> None:
     st.subheader("予想ランキング")
     st.dataframe(
         scored[display_columns],
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={
             "horse_number": "馬番",
@@ -651,7 +651,7 @@ def result_chronicle(results: pd.DataFrame, stats: dict, level: int, title: str,
     if results.empty:
         st.caption("まだ記録はありません。")
     else:
-        st.dataframe(results, use_container_width=True, hide_index=True)
+        st.dataframe(results, width="stretch", hide_index=True)
 
 
 def main() -> None:
