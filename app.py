@@ -49,6 +49,14 @@ DASHBOARD_COPY = {
         "locked_heading": "🔒 詳細分析ロック",
         "locked_comment_label": "おっちゃんの本音コメント",
         "locked_comment_value": "ロック中",
+        "paid_mode_label": "開発用：有料表示モード",
+        "paid_mode_help": "決済なしで、課金後の詳細表示を確認するための仮モードです。",
+        "paid_detail_heading": "🔥 おっちゃんの本音分析",
+        "paid_detail_lead": "ここから先は、課金後に見える想定の詳細分析や。",
+        "free_locked_message": "おっちゃんの本音コメント：ロック中",
+        "premium_comment_fallback": "この馬の本音コメントはまだ仕込み中や。",
+        "risk_detail_label": "危険度",
+        "value_detail_label": "妙味",
         "danger_label": "危険度",
         "value_label": "妙味",
         "total_grade_label": "総合評価",
@@ -76,6 +84,14 @@ DASHBOARD_COPY = {
         "locked_heading": "🔒 Detailed Analysis Locked",
         "locked_comment_label": "Uncle’s Real Comment",
         "locked_comment_value": "Locked",
+        "paid_mode_label": "Dev: Paid Detail Mode",
+        "paid_mode_help": "Preview what users will see after unlocking paid details. No real payment is active.",
+        "paid_detail_heading": "🔥 Uncle’s Real Analysis",
+        "paid_detail_lead": "This is the kind of detail users will see after unlocking the paid view.",
+        "free_locked_message": "Uncle’s real comment: Locked",
+        "premium_comment_fallback": "Uncle’s real comment is still being prepared.",
+        "risk_detail_label": "Risk",
+        "value_detail_label": "Value",
         "danger_label": "Risk",
         "value_label": "Value",
         "total_grade_label": "Overall Grade",
@@ -366,7 +382,7 @@ def first_available(scored: pd.DataFrame, role: str, used_numbers: set[int]) -> 
     return candidates.iloc[0]
 
 
-def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame, copy: dict) -> None:
+def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame, copy: dict, paid_mode: bool) -> None:
     if races.empty:
         st.info(copy["empty_race_message"])
         return
@@ -426,7 +442,7 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame, copy: dict) -> No
         """
     main_axes = compute_axis_scores(main)
     axis_labels = copy["axis_labels"]
-    locked_axis_html = "".join(
+    free_axis_html = "".join(
         [
             f"<span class='locked-pill'>{axis_labels['bloodline']} {axis_grade(main_axes['axis_bloodline'])}</span>",
             f"<span class='locked-pill'>{axis_labels['distance']} {axis_grade(main_axes['axis_distance'])}</span>",
@@ -437,6 +453,35 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame, copy: dict) -> No
             f"<span class='locked-pill'>{copy['danger_label']} ???</span>",
             f"<span class='locked-pill'>{copy['value_label']} ???</span>",
         ]
+    )
+    paid_axis_html = "".join(
+        [
+            f"<span class='locked-pill'>{axis_labels['bloodline']} {axis_grade(main_axes['axis_bloodline'])}</span>",
+            f"<span class='locked-pill'>{axis_labels['distance']} {axis_grade(main_axes['axis_distance'])}</span>",
+            f"<span class='locked-pill'>{axis_labels['course']} {axis_grade(main_axes['axis_course'])}</span>",
+            f"<span class='locked-pill'>{axis_labels['pace']} {axis_grade(main_axes['axis_pace'])}</span>",
+            f"<span class='locked-pill'>{axis_labels['jockey']} {axis_grade(main_axes['axis_jockey_stable'])}</span>",
+            f"<span class='locked-pill'>{axis_labels['condition']} {axis_grade(main_axes['axis_condition'])}</span>",
+            f"<span class='locked-pill'>{copy['risk_detail_label']} {axis_grade(main_axes['axis_danger'])}</span>",
+            f"<span class='locked-pill'>{copy['value_detail_label']} {axis_grade(main_axes['axis_value'])}</span>",
+        ]
+    )
+    premium_comment = str(main.get("premium_comment", "") or "").strip()
+    if not premium_comment or premium_comment.lower() == "nan":
+        premium_comment = copy["premium_comment_fallback"]
+    detail_html = (
+        f"""
+        <div class="locked-title">{copy['paid_detail_heading']}</div>
+        <div class="small-muted">{copy['paid_detail_lead']}</div>
+        <div class="locked-axis">{paid_axis_html}</div>
+        <div>{premium_comment}</div>
+        """
+        if paid_mode
+        else f"""
+        <div class="locked-title">{copy['locked_heading']}</div>
+        <div class="locked-axis">{free_axis_html}</div>
+        <div>{copy['free_locked_message']}</div>
+        """
     )
 
     st.markdown(
@@ -451,9 +496,7 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame, copy: dict) -> No
             </div>
             <div class="top-hit-grid">{card_html}</div>
             <div class="locked-area">
-                <div class="locked-title">{copy['locked_heading']}</div>
-                <div class="locked-axis">{locked_axis_html}</div>
-                <div>{copy['locked_comment_label']}：{copy['locked_comment_value']}</div>
+                {detail_html}
             </div>
         </div>
         """,
@@ -461,10 +504,10 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame, copy: dict) -> No
     )
 
 
-def dashboard(races: pd.DataFrame, horses: pd.DataFrame, results: pd.DataFrame, stats: dict, level: int, title: str, copy: dict) -> None:
+def dashboard(races: pd.DataFrame, horses: pd.DataFrame, results: pd.DataFrame, stats: dict, level: int, title: str, copy: dict, paid_mode: bool) -> None:
     hero(copy["hero_title"], copy["hero_subtitle"])
     oldman_card(get_dashboard_comment(stats))
-    top_hit_section(races, horses, copy)
+    top_hit_section(races, horses, copy, paid_mode)
 
     c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("おっちゃん Lv", f"Lv.{level}")
@@ -764,13 +807,20 @@ def main() -> None:
     )
     st.session_state["dashboard_lang"] = language_options[selected_language]
     copy = DASHBOARD_COPY[st.session_state["dashboard_lang"]]
+    if "paid_mode" not in st.session_state:
+        st.session_state["paid_mode"] = False
+    paid_mode = st.sidebar.checkbox(
+        copy["paid_mode_label"],
+        help=copy["paid_mode_help"],
+        key="paid_mode",
+    )
     page = st.sidebar.radio(
         "画面切り替え",
         ["Dashboard", "Race Board", "Horse Scout", "Tactics Room", "Result Chronicle"],
     )
 
     if page == "Dashboard":
-        dashboard(races, horses, results, stats, level, title, copy)
+        dashboard(races, horses, results, stats, level, title, copy, paid_mode)
     elif page == "Race Board":
         race_board(races)
     elif page == "Horse Scout":
