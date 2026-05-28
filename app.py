@@ -37,30 +37,59 @@ st.set_page_config(
 )
 
 DASHBOARD_COPY = {
-    "hero_title": "41g Racing Lab",
-    "hero_subtitle": "流れを読み、妙味を拾い、反省で育つシミュレーション型競馬予想ラボ",
-    "top_hit_kicker": "おっちゃんの見立て",
-    "top_hit_heading": "トップヒット3頭",
-    "top_hit_lead": "無料版MVP: まず見るべき3頭だけ表示",
-    "main_cta": "おっちゃんの本音を見る",
-    "sake_cta": "酒代おごったる!!",
-    "sake_cta_note": "※投げ銭機能は準備中",
-    "locked_heading": "🔒 詳細分析ロック",
-    "locked_comment_label": "おっちゃんの本音コメント",
-    "locked_comment_value": "ロック中",
-    "danger_label": "危険度",
-    "value_label": "妙味",
-    "total_grade_label": "総合評価",
-    "empty_race_message": "レース登録後に、おっちゃんのトップヒット3頭が表示されます。",
-    "empty_horse_message": "出走馬データを入れると、◎本命 / ○対抗 / ▲穴馬がここに出ます。",
-    "not_enough_horse_message": "トップヒット3頭は、出走馬が3頭以上になると表示されます。",
-    "axis_labels": {
-        "bloodline": "血統",
-        "distance": "距離",
-        "course": "コース",
-        "pace": "展開",
-        "jockey": "騎手",
-        "condition": "調子",
+    "ja": {
+        "hero_title": "今日も狙って、燃やせ!!",
+        "hero_subtitle": "勝てば祭り、外せばヤケ酒。おっちゃんの競馬研究所、開幕や!!",
+        "top_hit_kicker": "おっちゃんの見立て",
+        "top_hit_heading": "おっちゃんのトップヒット3頭",
+        "top_hit_lead": "ほれ見ぃ!! 今日の狙いはこの3頭や!!",
+        "main_cta": "おっちゃんの本音を見る!!",
+        "sake_cta": "酒代おごったる!!",
+        "sake_cta_note": "※投げ銭機能は準備中",
+        "locked_heading": "🔒 詳細分析ロック",
+        "locked_comment_label": "おっちゃんの本音コメント",
+        "locked_comment_value": "ロック中",
+        "danger_label": "危険度",
+        "value_label": "妙味",
+        "total_grade_label": "総合評価",
+        "empty_race_message": "レース登録後に、おっちゃんのトップヒット3頭が表示されます。",
+        "empty_horse_message": "出走馬データを入れると、◎本命 / ○対抗 / ▲穴馬がここに出ます。",
+        "not_enough_horse_message": "トップヒット3頭は、出走馬が3頭以上になると表示されます。",
+        "axis_labels": {
+            "bloodline": "血統",
+            "distance": "距離",
+            "course": "コース",
+            "pace": "展開",
+            "jockey": "騎手",
+            "condition": "調子",
+        },
+    },
+    "en": {
+        "hero_title": "Pick Hard. Burn Bright!!",
+        "hero_subtitle": "Win, and it’s a festival. Lose, and it’s yaké-zake. Uncle’s Racing Lab is open.",
+        "top_hit_kicker": "TODAY’S RACE HEAT",
+        "top_hit_heading": "Uncle’s Top 3 Picks",
+        "top_hit_lead": "Listen up!! These are the three horses to watch today.",
+        "main_cta": "Unlock Uncle’s Real Take!!",
+        "sake_cta": "Buy Uncle a Drink!!",
+        "sake_cta_note": "Tips feature coming soon",
+        "locked_heading": "🔒 Detailed Analysis Locked",
+        "locked_comment_label": "Uncle’s Real Comment",
+        "locked_comment_value": "Locked",
+        "danger_label": "Risk",
+        "value_label": "Value",
+        "total_grade_label": "Overall Grade",
+        "empty_race_message": "No race data yet.",
+        "empty_horse_message": "No horse data yet.",
+        "not_enough_horse_message": "Not enough horses to show Top 3.",
+        "axis_labels": {
+            "bloodline": "Bloodline",
+            "distance": "Distance",
+            "course": "Course",
+            "pace": "Pace",
+            "jockey": "Jockey",
+            "condition": "Form",
+        },
     },
 }
 
@@ -337,9 +366,9 @@ def first_available(scored: pd.DataFrame, role: str, used_numbers: set[int]) -> 
     return candidates.iloc[0]
 
 
-def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
+def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame, copy: dict) -> None:
     if races.empty:
-        st.info(DASHBOARD_COPY["empty_race_message"])
+        st.info(copy["empty_race_message"])
         return
 
     display_races = races.copy()
@@ -347,12 +376,12 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
     race = display_races.sort_values(["_display_date", "race_id"], na_position="first").iloc[-1]
     target_horses = horses[horses["race_id"] == race["race_id"]]
     if target_horses.empty:
-        st.info(DASHBOARD_COPY["empty_horse_message"])
+        st.info(copy["empty_horse_message"])
         return
 
     scored = score_horses(target_horses, race)
     if len(scored) < 3:
-        st.info(DASHBOARD_COPY["not_enough_horse_message"])
+        st.info(copy["not_enough_horse_message"])
         return
 
     used_numbers: set[int] = set()
@@ -390,13 +419,13 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
         <div class="top-hit-card">
             <div class="top-hit-mark">{mark}</div>
             <div class="top-hit-horse">{int(row['horse_number'])}番 {row['horse_name']}</div>
-            <div class="top-hit-grade">{DASHBOARD_COPY['total_grade_label']} {total_grade(float(row['total_score']))}</div>
+            <div class="top-hit-grade">{copy['total_grade_label']} {total_grade(float(row['total_score']))}</div>
             <div class="small-muted">{comment}</div>
-            <div class="top-hit-button">{DASHBOARD_COPY['main_cta']}</div>
+            <div class="top-hit-button">{copy['main_cta']}</div>
         </div>
         """
     main_axes = compute_axis_scores(main)
-    axis_labels = DASHBOARD_COPY["axis_labels"]
+    axis_labels = copy["axis_labels"]
     locked_axis_html = "".join(
         [
             f"<span class='locked-pill'>{axis_labels['bloodline']} {axis_grade(main_axes['axis_bloodline'])}</span>",
@@ -405,8 +434,8 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
             f"<span class='locked-pill'>{axis_labels['pace']} {axis_grade(main_axes['axis_pace'])}</span>",
             f"<span class='locked-pill'>{axis_labels['jockey']} {axis_grade(main_axes['axis_jockey_stable'])}</span>",
             f"<span class='locked-pill'>{axis_labels['condition']} {axis_grade(main_axes['axis_condition'])}</span>",
-            f"<span class='locked-pill'>{DASHBOARD_COPY['danger_label']} ???</span>",
-            f"<span class='locked-pill'>{DASHBOARD_COPY['value_label']} ???</span>",
+            f"<span class='locked-pill'>{copy['danger_label']} ???</span>",
+            f"<span class='locked-pill'>{copy['value_label']} ???</span>",
         ]
     )
 
@@ -415,16 +444,16 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
         <div class="top-hit-wrap">
             <div class="top-hit-head">
                 <div>
-                    <div class="top-hit-kicker">{DASHBOARD_COPY['top_hit_kicker']}</div>
-                    <div class="top-hit-title">{race['track']} {race['race_name']} {DASHBOARD_COPY['top_hit_heading']}</div>
+                    <div class="top-hit-kicker">{copy['top_hit_kicker']}</div>
+                    <div class="top-hit-title">{race['track']} {race['race_name']} {copy['top_hit_heading']}</div>
                 </div>
-                <div class="small-muted">{DASHBOARD_COPY['top_hit_lead']}</div>
+                <div class="small-muted">{copy['top_hit_lead']}</div>
             </div>
             <div class="top-hit-grid">{card_html}</div>
             <div class="locked-area">
-                <div class="locked-title">{DASHBOARD_COPY['locked_heading']}</div>
+                <div class="locked-title">{copy['locked_heading']}</div>
                 <div class="locked-axis">{locked_axis_html}</div>
-                <div>{DASHBOARD_COPY['locked_comment_label']}：{DASHBOARD_COPY['locked_comment_value']}</div>
+                <div>{copy['locked_comment_label']}：{copy['locked_comment_value']}</div>
             </div>
         </div>
         """,
@@ -432,10 +461,10 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
     )
 
 
-def dashboard(races: pd.DataFrame, horses: pd.DataFrame, results: pd.DataFrame, stats: dict, level: int, title: str) -> None:
-    hero(DASHBOARD_COPY["hero_title"], DASHBOARD_COPY["hero_subtitle"])
+def dashboard(races: pd.DataFrame, horses: pd.DataFrame, results: pd.DataFrame, stats: dict, level: int, title: str, copy: dict) -> None:
+    hero(copy["hero_title"], copy["hero_subtitle"])
     oldman_card(get_dashboard_comment(stats))
-    top_hit_section(races, horses)
+    top_hit_section(races, horses, copy)
 
     c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("おっちゃん Lv", f"Lv.{level}")
@@ -725,13 +754,23 @@ def main() -> None:
     st.sidebar.title("41g Racing Lab")
     st.sidebar.caption("怪しい作戦室、でも数字は見る。")
     st.sidebar.metric("浪速の穴馬おじさん", f"Lv.{level}", title)
+    language_options = {"日本語": "ja", "English": "en"}
+    current_lang = st.session_state.get("dashboard_lang", "ja")
+    current_label = next((label for label, key in language_options.items() if key == current_lang), "日本語")
+    selected_language = st.sidebar.radio(
+        "Language",
+        list(language_options.keys()),
+        index=list(language_options.keys()).index(current_label),
+    )
+    st.session_state["dashboard_lang"] = language_options[selected_language]
+    copy = DASHBOARD_COPY[st.session_state["dashboard_lang"]]
     page = st.sidebar.radio(
         "画面切り替え",
         ["Dashboard", "Race Board", "Horse Scout", "Tactics Room", "Result Chronicle"],
     )
 
     if page == "Dashboard":
-        dashboard(races, horses, results, stats, level, title)
+        dashboard(races, horses, results, stats, level, title, copy)
     elif page == "Race Board":
         race_board(races)
     elif page == "Horse Scout":
