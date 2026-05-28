@@ -36,6 +36,34 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+DASHBOARD_COPY = {
+    "hero_title": "41g Racing Lab",
+    "hero_subtitle": "流れを読み、妙味を拾い、反省で育つシミュレーション型競馬予想ラボ",
+    "top_hit_kicker": "おっちゃんの見立て",
+    "top_hit_heading": "トップヒット3頭",
+    "top_hit_lead": "無料版MVP: まず見るべき3頭だけ表示",
+    "main_cta": "おっちゃんの本音を見る",
+    "sake_cta": "酒代おごったる!!",
+    "sake_cta_note": "※投げ銭機能は準備中",
+    "locked_heading": "🔒 詳細分析ロック",
+    "locked_comment_label": "おっちゃんの本音コメント",
+    "locked_comment_value": "ロック中",
+    "danger_label": "危険度",
+    "value_label": "妙味",
+    "total_grade_label": "総合評価",
+    "empty_race_message": "レース登録後に、おっちゃんのトップヒット3頭が表示されます。",
+    "empty_horse_message": "出走馬データを入れると、◎本命 / ○対抗 / ▲穴馬がここに出ます。",
+    "not_enough_horse_message": "トップヒット3頭は、出走馬が3頭以上になると表示されます。",
+    "axis_labels": {
+        "bloodline": "血統",
+        "distance": "距離",
+        "course": "コース",
+        "pace": "展開",
+        "jockey": "騎手",
+        "condition": "調子",
+    },
+}
+
 
 def inject_style() -> None:
     st.markdown(
@@ -311,7 +339,7 @@ def first_available(scored: pd.DataFrame, role: str, used_numbers: set[int]) -> 
 
 def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
     if races.empty:
-        st.info("レース登録後に、おっちゃんのトップヒット3頭が表示されます。")
+        st.info(DASHBOARD_COPY["empty_race_message"])
         return
 
     display_races = races.copy()
@@ -319,12 +347,12 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
     race = display_races.sort_values(["_display_date", "race_id"], na_position="first").iloc[-1]
     target_horses = horses[horses["race_id"] == race["race_id"]]
     if target_horses.empty:
-        st.info("出走馬データを入れると、◎本命 / ○対抗 / ▲穴馬がここに出ます。")
+        st.info(DASHBOARD_COPY["empty_horse_message"])
         return
 
     scored = score_horses(target_horses, race)
     if len(scored) < 3:
-        st.info("トップヒット3頭は、出走馬が3頭以上になると表示されます。")
+        st.info(DASHBOARD_COPY["not_enough_horse_message"])
         return
 
     used_numbers: set[int] = set()
@@ -362,22 +390,23 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
         <div class="top-hit-card">
             <div class="top-hit-mark">{mark}</div>
             <div class="top-hit-horse">{int(row['horse_number'])}番 {row['horse_name']}</div>
-            <div class="top-hit-grade">総合評価 {total_grade(float(row['total_score']))}</div>
+            <div class="top-hit-grade">{DASHBOARD_COPY['total_grade_label']} {total_grade(float(row['total_score']))}</div>
             <div class="small-muted">{comment}</div>
-            <div class="top-hit-button">おっちゃんの本音を見る</div>
+            <div class="top-hit-button">{DASHBOARD_COPY['main_cta']}</div>
         </div>
         """
     main_axes = compute_axis_scores(main)
+    axis_labels = DASHBOARD_COPY["axis_labels"]
     locked_axis_html = "".join(
         [
-            f"<span class='locked-pill'>血統 {axis_grade(main_axes['axis_bloodline'])}</span>",
-            f"<span class='locked-pill'>距離 {axis_grade(main_axes['axis_distance'])}</span>",
-            f"<span class='locked-pill'>コース {axis_grade(main_axes['axis_course'])}</span>",
-            f"<span class='locked-pill'>展開 {axis_grade(main_axes['axis_pace'])}</span>",
-            f"<span class='locked-pill'>騎手 {axis_grade(main_axes['axis_jockey_stable'])}</span>",
-            f"<span class='locked-pill'>調子 {axis_grade(main_axes['axis_condition'])}</span>",
-            "<span class='locked-pill'>危険度 ???</span>",
-            "<span class='locked-pill'>妙味 ???</span>",
+            f"<span class='locked-pill'>{axis_labels['bloodline']} {axis_grade(main_axes['axis_bloodline'])}</span>",
+            f"<span class='locked-pill'>{axis_labels['distance']} {axis_grade(main_axes['axis_distance'])}</span>",
+            f"<span class='locked-pill'>{axis_labels['course']} {axis_grade(main_axes['axis_course'])}</span>",
+            f"<span class='locked-pill'>{axis_labels['pace']} {axis_grade(main_axes['axis_pace'])}</span>",
+            f"<span class='locked-pill'>{axis_labels['jockey']} {axis_grade(main_axes['axis_jockey_stable'])}</span>",
+            f"<span class='locked-pill'>{axis_labels['condition']} {axis_grade(main_axes['axis_condition'])}</span>",
+            f"<span class='locked-pill'>{DASHBOARD_COPY['danger_label']} ???</span>",
+            f"<span class='locked-pill'>{DASHBOARD_COPY['value_label']} ???</span>",
         ]
     )
 
@@ -386,16 +415,16 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
         <div class="top-hit-wrap">
             <div class="top-hit-head">
                 <div>
-                    <div class="top-hit-kicker">おっちゃんの見立て</div>
-                    <div class="top-hit-title">{race['track']} {race['race_name']} トップヒット3頭</div>
+                    <div class="top-hit-kicker">{DASHBOARD_COPY['top_hit_kicker']}</div>
+                    <div class="top-hit-title">{race['track']} {race['race_name']} {DASHBOARD_COPY['top_hit_heading']}</div>
                 </div>
-                <div class="small-muted">無料版MVP: まず見るべき3頭だけ表示</div>
+                <div class="small-muted">{DASHBOARD_COPY['top_hit_lead']}</div>
             </div>
             <div class="top-hit-grid">{card_html}</div>
             <div class="locked-area">
-                <div class="locked-title">🔒 詳細分析ロック</div>
+                <div class="locked-title">{DASHBOARD_COPY['locked_heading']}</div>
                 <div class="locked-axis">{locked_axis_html}</div>
-                <div>おっちゃんの本音コメント：ロック中</div>
+                <div>{DASHBOARD_COPY['locked_comment_label']}：{DASHBOARD_COPY['locked_comment_value']}</div>
             </div>
         </div>
         """,
@@ -404,7 +433,7 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame) -> None:
 
 
 def dashboard(races: pd.DataFrame, horses: pd.DataFrame, results: pd.DataFrame, stats: dict, level: int, title: str) -> None:
-    hero("41g Racing Lab", "流れを読み、妙味を拾い、反省で育つシミュレーション型競馬予想ラボ")
+    hero(DASHBOARD_COPY["hero_title"], DASHBOARD_COPY["hero_subtitle"])
     oldman_card(get_dashboard_comment(stats))
     top_hit_section(races, horses)
 
