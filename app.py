@@ -109,6 +109,25 @@ DASHBOARD_COPY = {
     },
 }
 
+CHARACTER_REACTIONS = {
+    "ja": {
+        "hit": "よっしゃ、取ったで!! 今日は酒がうまい日や!!",
+        "miss": "外したか……しゃあない、ヤケ酒して次や次!!",
+        "close": "ぐぬぬ……惜しかったな。これは次に繋がる負け方や。",
+        "big_win": "ドヤァ!! これは祭りや!! 今日はええ肉食えるで!!",
+        "bad_loss": "これはあかん……今日は静かに反省会や。酒だけは濃いめで頼むわ。",
+        "label": "キャラクターリアクション",
+    },
+    "en": {
+        "hit": "Boom!! We got it. Drinks taste better tonight.",
+        "miss": "We missed it... No crying. One drink, then on to the next race.",
+        "close": "That was close... Painful, but useful. We’ll get it next time.",
+        "big_win": "That’s a big one!! Festival mode. Dinner’s getting upgraded tonight.",
+        "bad_loss": "That one hurt... Quiet review meeting. Make the drink strong.",
+        "label": "Character Reaction",
+    },
+}
+
 
 def inject_style() -> None:
     st.markdown(
@@ -668,6 +687,26 @@ def role_summary(title: str, df: pd.DataFrame, comment_func, limit: int = 3) -> 
         )
 
 
+def get_result_reaction_type(stake: int, payout: int) -> str:
+    if stake <= 0:
+        return "miss"
+    if payout >= stake * 3:
+        return "big_win"
+    if payout > stake:
+        return "hit"
+    if payout > 0:
+        return "close"
+    if stake >= 5000:
+        return "bad_loss"
+    return "miss"
+
+
+def reaction_card(reaction_type: str, lang: str) -> None:
+    reactions = CHARACTER_REACTIONS.get(lang, CHARACTER_REACTIONS["ja"])
+    message = reactions.get(reaction_type, reactions["miss"])
+    oldman_card(message, label=reactions["label"])
+
+
 def tactics_room(races: pd.DataFrame, horses: pd.DataFrame) -> None:
     hero("Tactics Room", "人気と指数のズレを探すメイン作戦室")
     oldman_card(get_screen_comment("Tactics Room"))
@@ -733,7 +772,7 @@ def tactics_room(races: pd.DataFrame, horses: pd.DataFrame) -> None:
         role_summary("危険人気馬", pick_by_role(scored, "危険人気馬"), get_risky_favorite_comment, 3)
 
 
-def result_chronicle(results: pd.DataFrame, stats: dict, level: int, title: str, races: pd.DataFrame) -> None:
+def result_chronicle(results: pd.DataFrame, stats: dict, level: int, title: str, races: pd.DataFrame, lang: str) -> None:
     hero("Result Chronicle", "勝ち負けを次の武器に変える戦績記録室")
     oldman_card(get_screen_comment("Result Chronicle"))
 
@@ -767,9 +806,13 @@ def result_chronicle(results: pd.DataFrame, stats: dict, level: int, title: str,
                 "memo": memo,
             },
         )
+        st.session_state["last_result_reaction_type"] = get_result_reaction_type(stake, payout)
         st.success("結果を記録しました。")
         oldman_card(get_result_comment(stake, payout), label="おっちゃんの即時反省")
         st.rerun()
+
+    if "last_result_reaction_type" in st.session_state:
+        reaction_card(st.session_state["last_result_reaction_type"], lang)
 
     c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("総購入額", f"{stats['total_stake']:,}円")
@@ -828,7 +871,7 @@ def main() -> None:
     elif page == "Tactics Room":
         tactics_room(races, horses)
     elif page == "Result Chronicle":
-        result_chronicle(results, stats, level, title, races)
+        result_chronicle(results, stats, level, title, races, st.session_state["dashboard_lang"])
 
     st.markdown(f"<div class='disclaimer'>{disclaimer_text()}</div>", unsafe_allow_html=True)
 
