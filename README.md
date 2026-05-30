@@ -113,3 +113,6 @@ Phase 1 では、検証しやすいシンプルなルールベースです。
 - note販売前のレポートプレビュー
 - スコア重みのUI調整
 - 結果CSVから得意条件と苦手条件を分析
+## Public App
+
+https://41g-racing-lab-hrqepbhwrvxpsuurmmrpfx.streamlit.app
