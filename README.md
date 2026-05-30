@@ -34,6 +34,12 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
+## Streamlit Community Cloud
+
+Streamlit Community Cloud で公開する場合は、GitHubリポジトリを選択し、Main file path に `app.py` を指定してください。
+
+このアプリは競馬予想の学習・分析・娯楽・検証を目的とした参考ツールです。馬券購入を推奨するものではありません。投票する場合は自己責任で、無理のない範囲で行ってください。
+
 ## データ
 
 初期データは `data/` に入っています。
