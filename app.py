@@ -263,6 +263,47 @@ def inject_style() -> None:
             font-weight: 800;
             font-size: 13px;
         }
+        .fire-cta-band {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid rgba(214, 65, 49, 0.58);
+            background: linear-gradient(135deg, rgba(64, 9, 7, 0.92), rgba(9, 30, 20, 0.88));
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin: -4px 0 18px;
+            box-shadow: 0 18px 40px rgba(155, 29, 20, 0.18);
+        }
+        .fire-cta-kicker {
+            color: #ffcf63;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 0;
+            margin-bottom: 4px;
+        }
+        .fire-cta-copy {
+            color: #fff4c4;
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+        .fire-cta-sub {
+            color: #e9d9b6;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .fire-cta-button {
+            display: inline-block;
+            white-space: nowrap;
+            border: 1px solid rgba(255, 221, 148, 0.45);
+            background: linear-gradient(180deg, #d9432f, #9f1f18);
+            color: #fff7df;
+            border-radius: 8px;
+            padding: 10px 13px;
+            font-weight: 900;
+            box-shadow: 0 10px 26px rgba(217, 67, 47, 0.28);
+        }
         .locked-area {
             margin-top: 12px;
             border: 1px dashed rgba(214, 173, 75, 0.38);
@@ -297,6 +338,13 @@ def inject_style() -> None:
             }
             .top-hit-head {
                 display: block;
+            }
+            .fire-cta-band {
+                display: block;
+            }
+            .fire-cta-button {
+                margin-top: 12px;
+                white-space: normal;
             }
         }
         .role-title {
@@ -349,6 +397,23 @@ def hero(title: str, subtitle: str) -> None:
         <div class="lab-hero">
             <div class="lab-title">{title}</div>
             <div class="lab-subtitle">{subtitle}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def fire_cta(copy: dict) -> None:
+    st.markdown(
+        f"""
+        <div class="fire-cta-band">
+            <div>
+                <div class="fire-cta-kicker">🔥 OCHAHN'S HEAT CHECK</div>
+                <div class="fire-cta-copy">勝ったら祭り、外したらヤケ酒。</div>
+                <div class="fire-cta-sub">今日はどの馬で勝負するんや？まずはトップヒット3頭から見ていこか。</div>
+                <div class="small-muted">{copy["sake_cta_note"]}</div>
+            </div>
+            <div class="fire-cta-button">▶ {copy["sake_cta"]}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -525,6 +590,7 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame, copy: dict, paid_
 
 def dashboard(races: pd.DataFrame, horses: pd.DataFrame, results: pd.DataFrame, stats: dict, level: int, title: str, copy: dict, paid_mode: bool) -> None:
     hero(copy["hero_title"], copy["hero_subtitle"])
+    fire_cta(copy)
     oldman_card(get_dashboard_comment(stats))
     top_hit_section(races, horses, copy, paid_mode)
 
