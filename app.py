@@ -226,42 +226,87 @@ def inject_style() -> None:
             gap: 12px;
         }
         .top-hit-card {
-            border: 1px solid rgba(214, 173, 75, 0.22);
-            background: rgba(5, 15, 10, 0.72);
-            border-radius: 8px;
-            padding: 14px;
-            min-height: 174px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(214, 173, 75, 0.42);
+            background: linear-gradient(145deg, rgba(8, 24, 15, 0.96), rgba(4, 10, 7, 0.9));
+            border-radius: 10px;
+            padding: 16px;
+            min-height: 202px;
+            box-shadow: inset 0 1px 0 rgba(255, 244, 196, 0.08), 0 18px 34px rgba(0, 0, 0, 0.34);
+        }
+        .top-hit-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at top right, rgba(214, 173, 75, 0.18), transparent 36%);
+        }
+        .top-hit-card-main {
+            border-color: rgba(255, 218, 96, 0.72);
+            box-shadow: inset 0 1px 0 rgba(255, 244, 196, 0.12), 0 22px 42px rgba(214, 65, 49, 0.18);
+        }
+        .top-hit-card-second {
+            border-color: rgba(214, 173, 75, 0.5);
+        }
+        .top-hit-card-hole {
+            border-color: rgba(214, 65, 49, 0.58);
+            background: linear-gradient(145deg, rgba(28, 9, 7, 0.96), rgba(4, 18, 12, 0.92));
+        }
+        .top-hit-card-inner {
+            position: relative;
+            z-index: 1;
         }
         .top-hit-mark {
-            color: var(--lab-gold);
-            font-size: 20px;
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid rgba(214, 173, 75, 0.56);
+            border-left: 4px solid #d64131;
+            color: #fff4c4;
+            background: rgba(214, 173, 75, 0.12);
+            border-radius: 6px;
+            padding: 5px 9px;
+            font-size: 18px;
             font-weight: 900;
+            letter-spacing: 0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
         }
         .top-hit-horse {
             color: #ffffff;
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 900;
-            margin-top: 6px;
+            line-height: 1.18;
+            margin-top: 12px;
+            text-shadow: 0 2px 0 rgba(0, 0, 0, 0.38);
         }
         .top-hit-grade {
             display: inline-block;
-            margin: 10px 0 8px;
-            padding: 4px 9px;
+            margin: 12px 0 8px;
+            padding: 5px 11px;
             border-radius: 999px;
-            border: 1px solid rgba(214, 173, 75, 0.34);
-            color: #f4d27c;
+            border: 1px solid rgba(255, 218, 96, 0.72);
+            color: #1b1206;
             font-weight: 900;
-            background: rgba(214, 173, 75, 0.08);
+            background: linear-gradient(135deg, #ffe08a, #d6ad4b);
+            box-shadow: 0 8px 18px rgba(214, 173, 75, 0.18);
+        }
+        .top-hit-comment {
+            min-height: 42px;
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 13px;
+            line-height: 1.55;
         }
         .top-hit-button {
             display: inline-block;
-            margin-top: 10px;
-            padding: 7px 10px;
-            border-radius: 6px;
-            color: #10100b;
-            background: #d6ad4b;
-            font-weight: 800;
+            margin-top: 12px;
+            padding: 8px 12px;
+            border-radius: 7px;
+            color: #fff4c4;
+            background: linear-gradient(135deg, #d64131, #8f1d15);
+            border: 1px solid rgba(255, 198, 94, 0.28);
+            font-weight: 900;
             font-size: 13px;
+            box-shadow: 0 10px 24px rgba(214, 65, 49, 0.22);
         }
         .fire-cta-band {
             display: flex;
@@ -514,14 +559,17 @@ def top_hit_section(races: pd.DataFrame, horses: pd.DataFrame, copy: dict, paid_
         ("▲ 穴馬", hole, get_value_horse_comment(hole)),
     ]
     card_html = ""
-    for mark, row, comment in cards:
+    card_styles = ["top-hit-card-main", "top-hit-card-second", "top-hit-card-hole"]
+    for index, (mark, row, comment) in enumerate(cards):
         card_html += f"""
-        <div class="top-hit-card">
-            <div class="top-hit-mark">{mark}</div>
-            <div class="top-hit-horse">{int(row['horse_number'])}番 {row['horse_name']}</div>
-            <div class="top-hit-grade">{copy['total_grade_label']} {total_grade(float(row['total_score']))}</div>
-            <div class="small-muted">{comment}</div>
-            <div class="top-hit-button">{copy['main_cta']}</div>
+        <div class="top-hit-card {card_styles[index]}">
+            <div class="top-hit-card-inner">
+                <div class="top-hit-mark">{mark}</div>
+                <div class="top-hit-horse">{int(row['horse_number'])}番 {row['horse_name']}</div>
+                <div class="top-hit-grade">{copy['total_grade_label']} {total_grade(float(row['total_score']))}</div>
+                <div class="top-hit-comment">{comment}</div>
+                <div class="top-hit-button">{copy['main_cta']}</div>
+            </div>
         </div>
         """
     main_axes = compute_axis_scores(main)
